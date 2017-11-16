@@ -1,7 +1,7 @@
 from nio import GeneratorBlock
 from nio.signal.base import Signal
 from nio.properties import IntProperty, StringProperty, ObjectProperty, \
-    PropertyHolder, VersionProperty, BoolProperty
+    PropertyHolder, VersionProperty, ListProperty, Property
 from nio.modules.web import RESTHandler, WebEngine
 import requests
 
@@ -32,6 +32,11 @@ class WebServer(PropertyHolder):
     endpoint = StringProperty(title='Endpoint', default='')
 
 
+class Subscriptions(PropertyHolder):
+    event = Property(default='', title='Event', allow_none=False)
+    type = Property(default='', title='Type', allow_none=False)
+
+
 class Prosperworks(GeneratorBlock):
 
     version = VersionProperty("1.0.0")
@@ -49,35 +54,37 @@ class Prosperworks(GeneratorBlock):
         title="Prosperworks Email Address",
         default="Rev.Dev@n.io",
         allow_none=False)
-    event = StringProperty(title='Event', default='new', allow_none=False)
-    event_type = StringProperty(title='Type', default='lead', allow_none=False)
+    subscription = ListProperty(
+        Subscriptions, title='Subscriptions', default=[])
 
     def __init__(self):
         super().__init__()
         self._server = None
-        self._subscription_id = None
+        self._subscription_id = []
 
     def configure(self, context):
         super().configure(context)
         self._create_web_server()
-        response = self._request('post', body={
-                "target": self.callback_url(),
-                "type": self.event_type(),
-                "event": self.event()
-            })
-        print('$$$$$$$$')
-        print(response.status_code)
-        print('$$$$$$$$')
-        if response.status_code != 200:
-            raise Exception
-        self._subscription_id = response.json()["id"]
+        for sub in self.subscription():
+            response = self._request('post', body={
+                    "target": self.callback_url(),
+                    "type": sub.type(),
+                    "event": sub.event()
+                })
+            print('$$$$$$$$')
+            print(response.status_code)
+            print('$$$$$$$$')
+            if response.status_code != 200:
+                raise Exception
+            self._subscription_id.append(response.json()["id"])
 
     def start(self):
         super().start()
         self._server.start()
 
     def stop(self):
-        self._request('delete', id=self._subscription_id)
+        for id in self._subscription_id:
+            self._request('delete', id=id)
         self._server.stop()
         super().stop()
 
