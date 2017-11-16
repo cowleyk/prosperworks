@@ -1,11 +1,9 @@
-import requests
-
 from nio import GeneratorBlock
 from nio.signal.base import Signal
 from nio.properties import IntProperty, StringProperty, ObjectProperty, \
-    PropertyHolder, VersionProperty, ListProperty
+    PropertyHolder, VersionProperty, BoolProperty
 from nio.modules.web import RESTHandler, WebEngine
-
+import requests
 
 
 class BuildSignal(RESTHandler):
@@ -34,12 +32,6 @@ class WebServer(PropertyHolder):
     endpoint = StringProperty(title='Endpoint', default='')
 
 
-class Subscriptions(PropertyHolder):
-
-    event = StringProperty(title='Event', default='new')
-    event_type = StringProperty(title='Type', default='lead')
-
-
 class Prosperworks(GeneratorBlock):
 
     version = VersionProperty("1.0.0")
@@ -48,49 +40,44 @@ class Prosperworks(GeneratorBlock):
     callback_url = StringProperty(
         title="Callback URL",
         default="",
-        allow_none=True)
+        allow_none=False)
     access_token = StringProperty(
         title="Access Token",
-        default="[[PROSPERWORKS_API_TOKEN]]",
-        allow_none=True)
+        default="[[PROSPERWORKS_ACCESS_TOKEN]]",
+        allow_none=False)
     email = StringProperty(
         title="Prosperworks Email Address",
         default="Rev.Dev@n.io",
         allow_none=False)
-    secret = StringProperty(title="User secret", default='', allow_none=True)
-    key = StringProperty(title="User key", default='', allow_none=True)
-    subscriptions = ListProperty(
-        Subscriptions, title='Subscriptions', default=[])
+    event = StringProperty(title='Event', default='new', allow_none=False)
+    event_type = StringProperty(title='Type', default='lead', allow_none=False)
 
     def __init__(self):
         super().__init__()
         self._server = None
-        self._subscription_id = []
+        self._subscription_id = None
 
     def configure(self, context):
         super().configure(context)
         self._create_web_server()
-        for sub in self.subscriptions():
-            response = self._request('post', body={
+        response = self._request('post', body={
                 "target": self.callback_url(),
-                "type": sub.type,
-                "event": sub.event,
-                "secret": {
-                    "secret": self.secret(),
-                    "key": self.key()
-                }
+                "type": self.event_type(),
+                "event": self.event()
             })
-            if response.status_code != 200:
-                raise Exception
-            self._subscription_id.append(response.json()["id"])
+        print('$$$$$$$$')
+        print(response.status_code)
+        print('$$$$$$$$')
+        if response.status_code != 200:
+            raise Exception
+        self._subscription_id = response.json()["id"]
 
     def start(self):
         super().start()
         self._server.start()
 
     def stop(self):
-        for id in self._subscription_id:
-            self._request('delete', id=id)
+        self._request('delete', id=self._subscription_id)
         self._server.stop()
         super().stop()
 
@@ -117,12 +104,13 @@ class Prosperworks(GeneratorBlock):
             "x-pw-useremail": self.email()
         }
         if body:
-            kwargs['data'] = body
+            kwargs['json'] = body
         response = getattr(requests, method)(url, **kwargs)
+        print('@@@@@')
+        print(response.status_code)
+        print('@@@@@')
         if response.status_code != 200:
             self.logger.error("Http request failed: {} {}".format(
                 response, response.json()))
         self.logger.debug("Http response: {}".format(response.json()))
         return response
-
-    # TODO: Command to get all current subscriptions (simple get to base url)
