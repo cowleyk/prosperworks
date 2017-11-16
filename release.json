@@ -1,7 +1,7 @@
 {
-  "namespace/BlockName": {
+  "nio/Prosperworks": {
     "language": "Python",
-    "version": "0.0.1",
-    "reference": "github.com/<organization>/<repo>@v0.0.1"
+    "url": "git://github.com/cowleyk/prosperworks.git",
+    "version": "1.0.0"
   }
 }

@@ -1,40 +1,49 @@
 {
-  "namespace/BlockName": {
+  "nio/Prosperworks": {
     "version": "1.0.0",
-    "description": "Description of the block.",
+    "description": "Block to establish a webhook and forward along incoming signals from a Prosperworks account.",
     "properties": {
-      "<property1>": {
-        "description": "Required description of the property"
+      "access_token": {
+        "title": "Access Token",
+        "type": "StringType",
+        "description": "API Access token from Prosperworks.",
+        "default": "[[PROSPERWORKS_ACCESS_TOKEN]]"
       },
-      "<property2>": {
-        "default": "Optional metadata with any key.",
-        "description": "Required description of the property"
+      "callback_url": {
+        "title": "Callback URL",
+        "type": "StringType",
+        "description": "URL Prosperworks should send events to.",
+        "default": ""
+      },
+      "email": {
+        "title": "Prosperworks Email Address",
+        "type": "StringType",
+        "description": "Email address associated with Prosperworks account.",
+        "default": "Rev.Dev@n.io"
+      },
+      "subscription": {
+        "title": "Subscriptions",
+        "type": "ListType",
+        "description": "Event and type of event the webhook should listen for.",
+        "default": []
+      },
+      "web_server": {
+        "title": "Web Server",
+        "type": "ObjectType",
+        "description": "Server configurations that webhook will be running on.",
+        "default": {
+          "host": "0.0.0.0",
+          "endpoint": "",
+          "port": 8182
+        }
       }
     },
-    "inputs": {
-      "<input1 | default>": {
-        "description": "Required description of the input"
-      },
-      "<input2>": {
-        "description": "Required description of the input"
-      }
-    },
+    "inputs": {},
     "outputs": {
-      "<output1 | default>": {
-        "description": "Required description of the output"
-      },
-      "<output2>": {
-        "description": "Required description of the output"
+      "default": {
+        "description": "Events sent from Prosperworks as a nio signal."
       }
     },
-    "commands": {
-      "<command1>": {
-        "description": "Required description of the command",
-        "type": "Optional type and other metadata with any key."
-      },
-      "<command2>": {
-        "description": "Required description of the command"
-      }
-    }
+    "commands": {}
   }
 }
