@@ -12,7 +12,7 @@
       "callback_url": {
         "title": "Callback URL",
         "type": "StringType",
-        "description": "URL Prosperworks should send events to.",
+        "description": "URL Prosperworks should send events to. Must use https.",
         "default": ""
       },
       "email": {
