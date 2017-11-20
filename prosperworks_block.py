@@ -71,9 +71,6 @@ class Prosperworks(GeneratorBlock):
                     "type": sub.type(),
                     "event": sub.event()
                 })
-            print('$$$$$$$$')
-            print(response.status_code)
-            print('$$$$$$$$')
             if response.status_code != 200:
                 raise Exception
             self._subscription_id.append(response.json()["id"])
@@ -113,9 +110,6 @@ class Prosperworks(GeneratorBlock):
         if body:
             kwargs['json'] = body
         response = getattr(requests, method)(url, **kwargs)
-        print('@@@@@')
-        print(response.status_code)
-        print('@@@@@')
         if response.status_code != 200:
             self.logger.error("Http request failed: {} {}".format(
                 response, response.json()))
